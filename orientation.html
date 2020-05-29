@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!-- saved from url=(0121)https://mdn.mozillademos.org/en-US/docs/Web/API/Detecting_device_orientation$samples/Orientation_example?revision=1587910 -->
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Detecting device orientation - Orientation_example - code sample</title>
+  <script src="js/three.js"></script>
+</head>
+
+<body>
+  <div id="world"></div>
+  <script>
+    //                 var ball   = document.querySelector('.ball');
+    // var garden = document.querySelector('.garden');
+    // var output = document.querySelector('.output');
+
+    // var maxX = garden.clientWidth  - ball.clientWidth;
+    // var maxY = garden.clientHeight - ball.clientHeight;
+
+    var pitch, roll
+
+    function handleOrientation(event) {
+      var x = event.beta;  // In degree in the range [-180,180]
+      var y = event.gamma; // In degree in the range [-90,90]
+
+      pitch = event.beta;
+      roll = event.gamma;
+
+      // output.innerHTML  = "beta : " + x + "\n";
+      // output.innerHTML += "gamma: " + y + "\n";
+
+      // Because we don't want to have the device upside down
+      // We constrain the x value to the range [-90,90]
+      if (x > 90) { x = 90 };
+      if (x < -90) { x = -90 };
+
+      // To make computation easier we shift the range of 
+      // x and y to [0,180]
+      x += 90;
+      y += 90;
+
+      // 10 is half the size of the ball
+      // It center the positioning point to the center of the ball
+      // ball.style.top  = (maxY*y/180 - 10) + "px";
+      // ball.style.left = (maxX*x/180 - 10) + "px";
+    }
+
+    window.addEventListener('deviceorientation', handleOrientation);
+
+
+
+
+
+    // threejs
+
+    var scene = new THREE.Scene();
+    var width = 2;
+    var height = 2;
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    //var camera = new THREE.OrthographicCamera( width / -2, width / 2, height / 2, height / -2, 1, 1000 );
+
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var geometry = new THREE.BoxGeometry();
+    var material = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+    var cube = new THREE.Mesh(geometry, material);
+
+    var cylGeom = new THREE.CylinderGeometry(1, 1, 10, 20);
+    var cylMat = new THREE.MeshPhongMaterial({ color: 0x0000ff, flatShading: true });
+    var cyl = new THREE.Mesh(cylGeom, cylMat);
+    cyl.rotation.x = THREE.Math.degToRad(90)
+    var scale = .2;
+    cyl.scale.set(scale, scale, scale);
+    //cyl.position.y += 5
+    cube.add(cyl);
+
+    scene.add(cube);
+
+
+    camera.position.z = 2;
+
+    //createLights()
+
+    {
+      const color = 0xFFFFFF;
+      const intensity = 1;
+      const light = new THREE.DirectionalLight(color, intensity);
+      light.position.set(0, 0, 40);
+      scene.add(light);
+    }
+
+    var animate = function () {
+      requestAnimationFrame(animate);
+
+      //cube.rotation.x += 0.01;
+      //cube.rotation.y += 0.01;
+      cube.rotation.x = THREE.Math.degToRad(-pitch);
+      cube.rotation.y = THREE.Math.degToRad(-roll);
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+
+    function createLights() {
+  // A hemisphere light is a gradient colored light; 
+  // the first parameter is the sky color, the second parameter is the ground color, 
+  // the third parameter is the intensity of the light
+  hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
+
+  // an ambient light modifies the global color of a scene and makes the shadows softer
+  ambientLight = new THREE.AmbientLight(0xdc8874, .5);
+  scene.add(ambientLight);
+
+  // A directional light shines from a specific direction. 
+  // It acts like the sun, that means that all the rays produced are parallel. 
+  shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+
+  // Set the direction of the light  
+  shadowLight.position.set(150, 350, 350);
+
+  // Allow shadow casting 
+  shadowLight.castShadow = true;
+
+  // define the visible area of the projected shadow
+  shadowLight.shadow.camera.left = -400;
+  shadowLight.shadow.camera.right = 400;
+  shadowLight.shadow.camera.top = 400;
+  shadowLight.shadow.camera.bottom = -400;
+  shadowLight.shadow.camera.near = 1;
+  shadowLight.shadow.camera.far = 1000;
+
+  // define the resolution of the shadow; the higher the better, 
+  // but also the more expensive and less performant
+  shadowLight.shadow.mapSize.width = 2048;
+  shadowLight.shadow.mapSize.height = 2048;
+
+  // to activate the lights, just add them to the scene
+  scene.add(hemisphereLight);
+  scene.add(shadowLight);
+}
+
+
+
+  // var scene = new THREE.Scene();
+
+  // scene.add(new THREE.GridHelper(50, 10));
+  // var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+  // var renderer = new THREE.WebGLRenderer();
+  // renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // container = document.getElementById('cube');
+  // container.appendChild(renderer.domElement);            
+
+
+  // texture cube
+
+// var loader = new THREE.CubeTextureLoader();
+// loader.setPath( 'textures/cube/pisa/' );
+
+
+// var textureCube = loader.load( [
+//  'px.png', 'nx.png',
+//  'py.png', 'ny.png',
+//  'pz.png', 'nz.png'
+// ] );
+
+// var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube } );
+  </script>
+
+
+</body>
+
+</html>
