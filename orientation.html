@@ -125,6 +125,8 @@ function createClock() {
 	clock.secondHand.rotation.z = ms;
 }
 
+    var clock;
+    createClock();
 
     // threejs
 
@@ -149,6 +151,7 @@ function createClock() {
     var scale = .2;
     cyl.scale.set(scale, scale, scale);
     //cyl.position.y += 5
+    cyl.add(clock);
     cube.add(cyl);
 
     scene.add(cube);
@@ -157,9 +160,6 @@ function createClock() {
     camera.position.z = 2;
 
     //createLights()
-    var clock;
-    createClock();
-	  cube.add(clock);
 
     {
       const color = 0xFFFFFF;
