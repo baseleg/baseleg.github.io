@@ -96,12 +96,12 @@ function Clock(){
 
 function createClock() {
 	clock = new Clock();
-	clock.mesh.rotation.x = THREE.Math.degToRad(90);
-	clock.mesh.rotation.y = THREE.Math.degToRad(180);
-	clock.mesh.position.y = 200;
-	clock.mesh.position.x = 100;
+	//clock.mesh.rotation.x = THREE.Math.degToRad(90);
+	//clock.mesh.rotation.y = THREE.Math.degToRad(180);
+	//clock.mesh.position.y = 200;
+	//clock.mesh.position.x = 100;
 	clock.mesh.scale.set(.5, .5, .5);
-	scene.add(clock.mesh);
+	//scene.add(clock.mesh);
 }
     
     function updateClock(){
@@ -159,6 +159,7 @@ function createClock() {
     //createLights()
     var clock;
     createClock();
+	  cube.add(clock);
 
     {
       const color = 0xFFFFFF;
