@@ -100,7 +100,7 @@ function createClock() {
 	//clock.mesh.rotation.y = THREE.Math.degToRad(180);
 	//clock.mesh.position.y = 200;
 	//clock.mesh.position.x = 100;
-	clock.mesh.scale.set(.5, .5, .5);
+	//clock.mesh.scale.set(.1, .1, .1);
 	//scene.add(clock.mesh);
 }
     
@@ -151,7 +151,11 @@ function createClock() {
     var scale = .2;
     cyl.scale.set(scale, scale, scale);
     //cyl.position.y += 5
-    cyl.add(clock);
+    //clock.mesh.position.x += 5;
+    clock.mesh.scale.set(.02, .02, .02)
+    clock.mesh.position.y += 5;
+    //clock.mesh.position.z += 10;
+    cyl.add(clock.mesh);
     cube.add(cyl);
 
     scene.add(cube);
