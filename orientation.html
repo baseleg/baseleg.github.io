@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!-- saved from url=(0121)https://mdn.mozillademos.org/en-US/docs/Web/API/Detecting_device_orientation$samples/Orientation_example?revision=1587910 -->
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Detecting device orientation - Orientation_example - code sample</title>
+  <script src="js/three.js"></script>
+</head>
+
+<body>
+  <div id="world"></div>
+  <script>
+    //                 var ball   = document.querySelector('.ball');
+    // var garden = document.querySelector('.garden');
+    // var output = document.querySelector('.output');
+
+    // var maxX = garden.clientWidth  - ball.clientWidth;
+    // var maxY = garden.clientHeight - ball.clientHeight;
+var Colors = {
+	red: 0xf25346,
+	white: 0xd8d0d1,
+	brown: 0x59332e,
+	pink: 0xf5986E,
+	brownDark: 0x23190f,
+	blue: 0x68c3c0,
+	yellow: 0xffff00,
+	gray: 0xaaaaaa,
+	black: 0x000000
+};
+
+    var pitch, roll
+
+    function handleOrientation(event) {
+      var x = event.beta;  // In degree in the range [-180,180]
+      var y = event.gamma; // In degree in the range [-90,90]
+
+      pitch = event.beta;
+      roll = event.gamma;
+
+      // output.innerHTML  = "beta : " + x + "\n";
+      // output.innerHTML += "gamma: " + y + "\n";
+
+      // Because we don't want to have the device upside down
+      // We constrain the x value to the range [-90,90]
+      if (x > 90) { x = 90 };
+      if (x < -90) { x = -90 };
+
+      // To make computation easier we shift the range of 
+      // x and y to [0,180]
+      x += 90;
+      y += 90;
+
+      // 10 is half the size of the ball
+      // It center the positioning point to the center of the ball
+      // ball.style.top  = (maxY*y/180 - 10) + "px";
+      // ball.style.left = (maxX*x/180 - 10) + "px";
+    }
+
+    window.addEventListener('deviceorientation', handleOrientation);
+
+function Clock(){
+	this.mesh = new THREE.Object3D();
+	var mat = new THREE.MeshPhongMaterial({
+		color: Colors.gray,
+		shading: THREE.FlatShading
+	});
+
+	var height = 1;
+	var radialSegments = 24;
+	const geom = new THREE.CylinderGeometry(5.0, 5.0, height, radialSegments);
+	//sun = m.scale.set(s, s, s);
+	clockFace = new THREE.Mesh(geom, mat);
+	sunScale = 10;
+	clockFace.scale.set(sunScale, sunScale, sunScale);
+	var cylinderHeight = 10;
+	var minuteHandGeo = new THREE.CylinderGeometry(1, 1, 10, 6);
+	var minuteMat = new THREE.MeshPhongMaterial({color: Colors.black, shading: THREE.FlatShading});
+	var minuteHand = new THREE.Mesh(minuteHandGeo, minuteMat);
+	minuteHand.geometry.translate(0, cylinderHeight / 2, -4 * height);
+	minuteHand.rotation.x = THREE.Math.degToRad(90);
+	minuteHand.scale.set(.2, .5, .2);
+	this.minuteHand = minuteHand;
+	var hourHand = minuteHand.clone();
+	hourHand.scale.set(.2, .3, .2);
+	var secondHand = minuteHand.clone();
+	secondHand.scale.set(.2, .5, .2);
+	this.hourHand = hourHand;
+	this.secondHand = secondHand;
+	clockFace.add(minuteHand);
+	clockFace.add(hourHand);
+	clockFace.add(secondHand);
+	this.mesh.add(clockFace);
+	//this.mesh.add(minuteHand);
+}
+
+function createClock() {
+	clock = new Clock();
+	//clock.mesh.rotation.x = THREE.Math.degToRad(90);
+	//clock.mesh.rotation.y = THREE.Math.degToRad(180);
+	//clock.mesh.position.y = 200;
+	//clock.mesh.position.x = 100;
+	//clock.mesh.scale.set(.1, .1, .1);
+	//scene.add(clock.mesh);
+}
+    
+    function updateClock(){
+
+	var now = new Date();
+	var hour = now.getHours();
+	var minute = now.getMinutes();
+	var second = now.getSeconds();
+	var ms = second + now.getMilliseconds() / 1000;
+	//console.log (ms)
+	//hour
+	hour = hour%12;
+	hour = (hour*Math.PI/6)+(minute*Math.PI/(6*60))+(second*Math.PI/(360*60));
+	minute = (minute*Math.PI/30)+(second*Math.PI/(30*60));
+	ms = (ms*Math.PI/30);
+	second = (second*Math.PI/30);
+
+
+	clock.minuteHand.rotation.z = minute;
+	clock.hourHand.rotation.z = hour;
+	clock.secondHand.rotation.z = ms;
+}
+
+    var clock;
+    createClock();
+
+    // threejs
+
+    var scene = new THREE.Scene();
+    var width = 2;
+    var height = 2;
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    //var camera = new THREE.OrthographicCamera( width / -2, width / 2, height / 2, height / -2, 1, 1000 );
+
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var geometry = new THREE.BoxGeometry();
+    var material = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+    var cube = new THREE.Mesh(geometry, material);
+
+    var cylGeom = new THREE.CylinderGeometry(1, 1, 10, 20);
+    var cylMat = new THREE.MeshPhongMaterial({ color: 0x0000ff, flatShading: true });
+    var cyl = new THREE.Mesh(cylGeom, cylMat);
+    cyl.rotation.x = THREE.Math.degToRad(90)
+    var scale = .2;
+    cyl.scale.set(scale, scale, scale);
+    //cyl.position.y += 5
+    //clock.mesh.position.x += 5;
+    clock.mesh.scale.set(.02, .02, .02)
+    clock.mesh.position.y += 5;
+    //clock.mesh.position.z += 10;
+    cyl.add(clock.mesh);
+    cube.add(cyl);
+
+    scene.add(cube);
+
+
+    camera.position.z = 2;
+
+    //createLights()
+
+    {
+      const color = 0xFFFFFF;
+      const intensity = 1;
+      const light = new THREE.DirectionalLight(color, intensity);
+      light.position.set(0, 0, 40);
+      scene.add(light);
+    }
+
+    var animate = function () {
+      requestAnimationFrame(animate);
+      updateClock();
+      //cube.rotation.x += 0.01;
+      //cube.rotation.y += 0.01;
+      cube.rotation.x = THREE.Math.degToRad(-pitch);
+      cube.rotation.y = THREE.Math.degToRad(-roll);
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+
+    function createLights() {
+  // A hemisphere light is a gradient colored light; 
+  // the first parameter is the sky color, the second parameter is the ground color, 
+  // the third parameter is the intensity of the light
+  hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
+
+  // an ambient light modifies the global color of a scene and makes the shadows softer
+  ambientLight = new THREE.AmbientLight(0xdc8874, .5);
+  scene.add(ambientLight);
+
+  // A directional light shines from a specific direction. 
+  // It acts like the sun, that means that all the rays produced are parallel. 
+  shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+
+  // Set the direction of the light  
+  shadowLight.position.set(150, 350, 350);
+
+  // Allow shadow casting 
+  shadowLight.castShadow = true;
+
+  // define the visible area of the projected shadow
+  shadowLight.shadow.camera.left = -400;
+  shadowLight.shadow.camera.right = 400;
+  shadowLight.shadow.camera.top = 400;
+  shadowLight.shadow.camera.bottom = -400;
+  shadowLight.shadow.camera.near = 1;
+  shadowLight.shadow.camera.far = 1000;
+
+  // define the resolution of the shadow; the higher the better, 
+  // but also the more expensive and less performant
+  shadowLight.shadow.mapSize.width = 2048;
+  shadowLight.shadow.mapSize.height = 2048;
+
+  // to activate the lights, just add them to the scene
+  scene.add(hemisphereLight);
+  scene.add(shadowLight);
+}
+
+
+
+  // var scene = new THREE.Scene();
+
+  // scene.add(new THREE.GridHelper(50, 10));
+  // var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+  // var renderer = new THREE.WebGLRenderer();
+  // renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // container = document.getElementById('cube');
+  // container.appendChild(renderer.domElement);            
+
+
+  // texture cube
+
+// var loader = new THREE.CubeTextureLoader();
+// loader.setPath( 'textures/cube/pisa/' );
+
+
+// var textureCube = loader.load( [
+//  'px.png', 'nx.png',
+//  'py.png', 'ny.png',
+//  'pz.png', 'nz.png'
+// ] );
+
+// var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube } );
+  </script>
+
+
+</body>
+
+</html>
