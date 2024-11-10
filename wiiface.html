@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head and Gaze Tracking with 3D Duck v.0.0.1</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <h1>Head and Gaze Tracking with 3D Duck v0.0.6</h1>
+    <button onclick="play()">play</button>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="output" width="640" height="480"></canvas>
+    <div id="3d-duck" style="width: 640px; height: 480px;"></div>
+
+    <script>
+        const video = document.getElementById('video');
+
+        function play(){
+            video.play();
+        }        
+        async function setupCamera() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise(resolve => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resolve(video);
+                };
+            });
+        }
+
+        async function loadModels() {
+            const faceModel = await blazeface.load();
+            const meshModel = await facemesh.load();
+            return { faceModel, meshModel };
+        }
+
+        function getCenterOfFace(prediction) {
+            const keypoints = prediction.landmarks;
+            let x = 0, y = 0;
+            for (const point of keypoints) {
+                x += point[0];
+                y += point[1];
+            }
+            x /= keypoints.length;
+            y /= keypoints.length;
+            return [x, y];
+        }
+
+        async function detect(video, faceModel, meshModel, duck) {
+            const canvas = document.getElementById('output');
+            const context = canvas.getContext('2d');
+            //context.clearRect(0, 0, canvas.width, canvas.height);
+            const predictions = await faceModel.estimateFaces(video, false);
+
+            if (predictions.length > 0) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                predictions.forEach(prediction => {
+                    const keypoints = prediction.landmarks;
+                    context.fillStyle = 'red';
+                    keypoints.forEach(([x, y]) => {
+                        context.fillRect(x, y, 5, 5);
+                    });
+
+                    // Calculate center of the face
+                    const [centerX, centerY] = getCenterOfFace(prediction);
+                    const deltaX = centerX - (canvas.width / 2);
+                    const deltaY = centerY - (canvas.height / 2);
+                    const angleY = Math.atan2(deltaX, canvas.width / 2);
+                    const angleX = Math.atan2(deltaY, canvas.height / 2);
+
+                    // Rotate duck to always face the user
+                    duck.rotation.y = angleY;
+                    duck.rotation.x = -angleX;
+                    const scale = 2;
+                    duck.scale.set(scale, scale, scale);
+                });
+            }
+
+            requestAnimationFrame(() => detect(video, faceModel, meshModel, duck));
+        }
+
+        function init3DDuck() {
+            const scene = new THREE.Scene();
+            //const camera = new THREE.PerspectiveCamera(75, 640 / 480, 0.1, 1000);
+            const camera = new THREE.PerspectiveCamera(85, 640 / 480, 0.1, 2000);
+            const width = 400;
+            const height = 400;
+            //const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(640, 480);
+            document.getElementById('3d-duck').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(0, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            // Duck model
+            const geometry = new THREE.BoxGeometry(1,1,1);
+            const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            const duck = new THREE.Mesh(geometry, material);
+            scene.add(duck);
+
+            camera.position.z = 5;
+
+            const animate = function () {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            return duck;
+        }
+
+        async function main() {
+            const video = await setupCamera();
+            const { faceModel, meshModel } = await loadModels();
+            const duck = init3DDuck();
+            detect(video, faceModel, meshModel, duck);
+        }
+
+        main();
+    </script>
+</body>
+</html>

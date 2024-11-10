@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js Scene with Cylinders and Discs</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.170.0/examples/js/controls/OrbitControls.min.js"></script> -->
+
 </head>
 <body>
     <h1>Three.js Scene with Cylinders and Discs</h1>
@@ -23,19 +29,24 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById('scene-container').appendChild(renderer.domElement);
 
+        // Add OrbitControls to enable mouse interaction
+        //const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
         // Create materials for the cylinders and discs
         const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const discMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
         // Function to create a cylinder with a disc on top
-        function createCylinderWithDisc(radius, height, positionX, positionY) {
+        function createCylinderWithDisc(radius, discRadius, height, positionX, positionY) {
             // Create the cylinder
             const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, height, 32);
             const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
             cylinder.position.set(positionX, positionY, 0);
+            cylinder.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
 
             // Create the disc
-            const discGeometry = new THREE.CircleGeometry(radius, 32);
+            const discGeometry = new THREE.CylinderGeometry(discRadius, discRadius, 0.2, 32);
+            //const discGeometry = new THREE.CircleGeometry(discRadius, 32);
             const disc = new THREE.Mesh(discGeometry, discMaterial);
             disc.position.set(positionX, positionY, height / 2);
             disc.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
@@ -46,9 +57,9 @@
         }
 
         // Create several cylinders with discs
-        createCylinderWithDisc(0.4, 10, -5, 0);
-        createCylinderWithDisc(0.2, 10, 0, 0);
-        createCylinderWithDisc(0.2, 10, 5, 0);
+        createCylinderWithDisc(0.5, 0.8, 20, -5, 0);
+        createCylinderWithDisc(0.2, 0.5, 10, 0, 0);
+        createCylinderWithDisc(0.2, 0.5, 10, 5, 0);
 
         // Add some ambient light
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -62,6 +73,7 @@
         // Render the scene
         function animate() {
             requestAnimationFrame(animate);
+            //controls.update();
             renderer.render(scene, camera);
         }
         animate();

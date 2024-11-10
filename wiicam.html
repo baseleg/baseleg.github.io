@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Scene with Head Tracking</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+</head>
+<body>
+    <h1>Three.js Scene with Head Tracking</h1>
+    <button onclick="play()">play</button>
+
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="output" width="640" height="480"></canvas>
+    <div id="scene-container" style="width: 100vw; height: 100vh;"></div>
+
+    <script>
+
+        const video = document.getElementById('video');
+
+        function play(){
+            video.play();
+        }          
+        async function setupCamera() {
+            //const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise(resolve => {
+                video.onloadedmetadata = () => {
+                    resolve(video);
+                };
+            });
+        }
+
+        async function loadModels() {
+            const faceModel = await blazeface.load();
+            return { faceModel };
+        }
+
+        function getCenterOfFace(prediction) {
+            const keypoints = prediction.landmarks;
+            let x = 0, y = 0;
+            for (const point of keypoints) {
+                x += point[0];
+                y += point[1];
+            }
+            x /= keypoints.length;
+            y /= keypoints.length;
+            return [x, y];
+        }
+
+        function getFaceDistance(prediction) {
+            const keypoints = prediction.landmarks;
+            const leftEye = keypoints[0];
+            const rightEye = keypoints[1];
+            const distance = Math.sqrt(
+                Math.pow(leftEye[0] - rightEye[0], 2) +
+                Math.pow(leftEye[1] - rightEye[1], 2)
+            );
+            return distance;
+        }
+
+        async function detect(video, faceModel, camera) {
+            const canvas = document.getElementById('output');
+            const context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            const predictions = await faceModel.estimateFaces(video, false);
+
+            if (predictions.length > 0) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                predictions.forEach(prediction => {
+                    const keypoints = prediction.landmarks;
+                    context.fillStyle = 'red';
+                    keypoints.forEach(([x, y]) => {
+                        context.fillRect(x, y, 5, 5);
+                    });
+
+                    // Calculate center of the face
+                    const [centerX, centerY] = getCenterOfFace(prediction);
+                    const deltaX = centerX - (canvas.width / 2);
+                    const deltaY = centerY - (canvas.height / 2);
+                    const angleY = Math.atan2(deltaX, canvas.width / 2);
+                    const angleX = Math.atan2(deltaY, canvas.height / 2);
+
+                    // Rotate camera to follow head movement
+                    // camera.rotation.y = -angleY;
+                    // camera.rotation.x = angleX;
+                    //camera.rotation.y = angleY;
+                    //camera.rotation.x = -angleX;
+
+                    // camera.position.x = deltaX / 50; 
+                    // camera.position.y = -deltaY / 50;                    
+                    camera.position.x = -deltaX / 50; 
+                    camera.position.y = -deltaY / 50;                    
+
+
+                    // Adjust camera zoom based on face distance
+                    const faceDistance = getFaceDistance(prediction);
+                    const zoomFactor = Math.min(Math.max(0.5, 1.5 - faceDistance / 100), 2);
+                    //camera.position.z = 20 / zoomFactor;
+                });
+            }
+
+            requestAnimationFrame(() => detect(video, faceModel, camera));
+        }
+
+        function initScene() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('scene-container').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(0, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            // 3D objects
+            const geometry = new THREE.CylinderGeometry(0.2, 0.2, 10, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const cylinder1 = new THREE.Mesh(geometry, material);
+            cylinder1.position.set(-5, 0, 0);
+            cylinder1.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
+            scene.add(cylinder1);
+
+            const cylinder2 = new THREE.Mesh(geometry, material);
+            cylinder2.position.set(0, 0, 0);
+            cylinder2.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
+            scene.add(cylinder2);
+
+            const cylinder3 = new THREE.Mesh(geometry, material);
+            cylinder3.position.set(5, 0, 0);
+            cylinder3.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
+            scene.add(cylinder3);
+
+            const discGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 32);
+            //const discGeometry = new THREE.CircleGeometry(0.2, 32);
+            const discMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+            const disc1 = new THREE.Mesh(discGeometry, discMaterial);
+            disc1.position.set(-5, 0, 5);
+            disc1.rotation.x = Math.PI / 2;
+            scene.add(disc1);
+
+            const disc2 = new THREE.Mesh(discGeometry, discMaterial);
+            disc2.position.set(0, 0, 5);
+            disc2.rotation.x = Math.PI / 2;
+            scene.add(disc2);
+
+            const disc3 = new THREE.Mesh(discGeometry, discMaterial);
+            disc3.position.set(5, 0, 5);
+            disc3.rotation.x = Math.PI / 2;
+            scene.add(disc3);
+
+            camera.position.z = 10;
+
+            const animate = function () {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            return { scene, camera };
+        }
+
+        async function main() {
+            const video = await setupCamera();
+            const { faceModel } = await loadModels();
+            const { scene, camera } = initScene();
+            detect(video, faceModel, camera);
+        }
+
+        main();
+    </script>
+</body>
+</html>
