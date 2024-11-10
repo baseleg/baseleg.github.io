@@ -10,8 +10,17 @@
     <video id="webcam" width="640" height="480" autoplay></video>
 
     <script>
+        const videoElement = document.getElementById('webcam');
+
+
+        function play(){
+            videoElement.play();
+        }
+
+        function pause(){
+            videoElement.pause();
+        }
         async function setupWebcam() {
-            const videoElement = document.getElementById('webcam');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 videoElement.srcObject = stream;
@@ -22,5 +31,7 @@
 
         setupWebcam();
     </script>
+    <button onclick="play()">play</button>
+    <button onclick="pause()">pause</button>
 </body>
 </html>
