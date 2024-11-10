@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <h1>Head and Gaze Tracking with 3D Duck v0.0.3</h1>
+    <h1>Head and Gaze Tracking with 3D Duck v0.0.4</h1>
     <video id="video" width="640" height="480" autoplay></video>
     <canvas id="output" width="640" height="480"></canvas>
     <div id="3d-duck" style="width: 640px; height: 480px;"></div>
@@ -116,9 +116,9 @@
         async function main() {
             const video = await setupCamera();
             video.play();
-            //const { faceModel, meshModel } = await loadModels();
-            //const duck = init3DDuck();
-            //detect(video, faceModel, meshModel, duck);
+            const { faceModel, meshModel } = await loadModels();
+            const duck = init3DDuck();
+            detect(video, faceModel, meshModel, duck);
         }
 
         main();
