@@ -11,9 +11,12 @@
 <body>
     <h1>Three.js Scene with Head Tracking</h1>
     <button onclick="play()">play</button>
+    <button onclick="pause()">pause</button>
 
-    <video id="video" width="640" height="480" autoplay></video>
+    <!-- <video id="video" width="640" height="480" autoplay></video> -->
+    <video id="video" width="160" height="120" autoplay></video>
     <canvas id="output" width="640" height="480"></canvas>
+    <!-- <canvas id="output" width="160" height="120"></canvas> -->
     <div id="scene-container" style="width: 100vw; height: 100vh;"></div>
 
     <script>
@@ -22,6 +25,9 @@
 
         function play(){
             video.play();
+        }          
+        function pause(){
+            video.pause();
         }          
         async function setupCamera() {
             //const video = document.getElementById('video');
@@ -140,7 +146,7 @@
 
             const discGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 32);
             //const discGeometry = new THREE.CircleGeometry(0.2, 32);
-            const discMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const discMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
 
             const disc1 = new THREE.Mesh(discGeometry, discMaterial);
             disc1.position.set(-5, 0, 5);
