@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Scene with Cylinders and Discs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <h1>Three.js Scene with Cylinders and Discs</h1>
+    <div id="scene-container" style="width: 100vw; height: 100vh;"></div>
+
+    <script>
+        // Create a scene
+        const scene = new THREE.Scene();
+
+        // Set up a camera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 20;
+
+        // Create a renderer and attach it to the document
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+
+        // Create materials for the cylinders and discs
+        const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const discMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+        // Function to create a cylinder with a disc on top
+        function createCylinderWithDisc(radius, height, positionX, positionY) {
+            // Create the cylinder
+            const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+            const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+            cylinder.position.set(positionX, positionY, 0);
+
+            // Create the disc
+            const discGeometry = new THREE.CircleGeometry(radius, 32);
+            const disc = new THREE.Mesh(discGeometry, discMaterial);
+            disc.position.set(positionX, positionY, height / 2);
+            disc.rotation.x = Math.PI / 2; // Rotate the disc to face outwards
+
+            // Add the cylinder and disc to the scene
+            scene.add(cylinder);
+            scene.add(disc);
+        }
+
+        // Create several cylinders with discs
+        createCylinderWithDisc(0.4, 10, -5, 0);
+        createCylinderWithDisc(0.2, 10, 0, 0);
+        createCylinderWithDisc(0.2, 10, 5, 0);
+
+        // Add some ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Add a directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(0, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        // Render the scene
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
