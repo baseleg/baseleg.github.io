@@ -11,13 +11,18 @@
 </head>
 <body>
     <h1>Head and Gaze Tracking with 3D Duck v0.0.5</h1>
+    <button onclick="play()">play</button>
     <video id="video" width="640" height="480" autoplay></video>
     <canvas id="output" width="640" height="480"></canvas>
     <div id="3d-duck" style="width: 640px; height: 480px;"></div>
 
     <script>
+        const video = document.getElementById('video');
+
+        function play(){
+            video.play();
+        }        
         async function setupCamera() {
-            const video = document.getElementById('video');
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
             return new Promise(resolve => {
