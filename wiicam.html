@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three.js Scene with Head Tracking</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 </head>
@@ -126,8 +127,9 @@
             directionalLight.position.set(0, 1, 1).normalize();
             scene.add(directionalLight);
 
+            const height = 20;
             // 3D objects
-            const geometry = new THREE.CylinderGeometry(0.1, 0.1, 10, 32);
+            const geometry = new THREE.CylinderGeometry(0.1, 0.1, height, 32);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const cylinder1 = new THREE.Mesh(geometry, material);
             cylinder1.position.set(-5, 0, 0);
@@ -163,7 +165,22 @@
             disc3.rotation.x = Math.PI / 2;
             scene.add(disc3);
 
-            camera.position.z = 10;
+
+            const loader = new THREE.GLTFLoader();
+            loader.load('pikachu.glb', function (gltf) {
+                const pikachu = gltf.scene;
+                scene.add(pikachu);
+
+                // Optional: scale and position the model
+                pikachu.scale.set(5, 5, 5);
+                pikachu.position.set(0, 0, 0);
+            }, undefined, function (error) {
+                console.error('An error occurred while loading the model', error);
+            });
+
+
+
+            camera.position.z = 20;
 
             const animate = function () {
                 requestAnimationFrame(animate);
