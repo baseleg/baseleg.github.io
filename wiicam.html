@@ -14,7 +14,7 @@
     <button onclick="pause()">pause</button>
 
     <!-- <video id="video" width="640" height="480" autoplay></video> -->
-    <video id="video" width="160" height="120" autoplay></video>
+    <video id="video" width="160" height="120" autoplay playsinline></video>
     <canvas id="output" width="640" height="480"></canvas>
     <!-- <canvas id="output" width="160" height="120"></canvas> -->
     <div id="scene-container" style="width: 100vw; height: 100vh;"></div>
@@ -127,7 +127,7 @@
             scene.add(directionalLight);
 
             // 3D objects
-            const geometry = new THREE.CylinderGeometry(0.2, 0.2, 10, 32);
+            const geometry = new THREE.CylinderGeometry(0.1, 0.1, 10, 32);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const cylinder1 = new THREE.Mesh(geometry, material);
             cylinder1.position.set(-5, 0, 0);
